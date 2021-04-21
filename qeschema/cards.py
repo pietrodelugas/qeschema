@@ -233,7 +233,6 @@ def get_cell_parameters_card(name, **kwargs):
     except KeyError:
         logger.error("Missing required arguments when building CELL_PARAMETERS card!")
         return []
-
     # Add cell parameters card
     cells = atomic_structure.get('cell', {})
     if cells:
