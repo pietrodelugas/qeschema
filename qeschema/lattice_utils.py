@@ -21,6 +21,8 @@ def abc_from_cell(cell, dgts=5):
            lattice vectors
   """
   at = np.array((cell['a1'],cell['a2'], cell['a3']))
+  import pdb
+  pdb.set_trace()
   A = round(np.sqrt(at[0].dot(at[0])),dgts) 
   B = round(np.sqrt(at[1].dot(at[1])),dgts)
   C = round(np.sqrt(at[2].dot(at[2])),dgts) 
@@ -28,8 +30,8 @@ def abc_from_cell(cell, dgts=5):
   COSBC = round(at[1].dot(at[2])/B/C, dgts)
   COSAC = round(at[2].dot(at[0])/C/A, dgts)  
   bohr2ang = 0.529177 
-  return round(A * bohr0ang,dgts), round(B * bohr2ang), round(C * bohr2ang,dgts),
-     COSAB, COSBC, COSAC 
+  return (round(A * bohr2ang,dgts), round(B * bohr2ang,dgts), round(C * bohr2ang,dgts), 
+  COSAB, COSBC, COSAC) 
 
 def signed_ibrav(ibrav, alternative_axes):
   if alternative_axes is None:
@@ -44,15 +46,13 @@ def signed_ibrav(ibrav, alternative_axes):
     elif alternative_axes == "bcoA-type":
       return 91
     else:
-      logger.error("%s is not a valid alternative-axes string for ibrav %i" % (alternative_axes, ibrav)) 
-      continue 
+      logger.error("%s is not a valid alternative-axes string for ibrav %i" % (alternative_axes, ibrav))  
   elif ibrav == 91:
     return 91 
   elif (ibrav == 12 or ibrav == 13) and alternative_axes == "unique-axis-b":
     return -ibrav 
   else:
     logger.error("%s is not a valid alternative-axes string for ibrav %i" % (alternative_axes,ibrav))
-    continue
 
   
 
