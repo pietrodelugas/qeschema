@@ -140,8 +140,8 @@ def get_ibrav(name, **kwargs):
     return set_ibrav_to_zero(name, **kwargs) 
   A,B,C,COSAB,COSAC,COSBC = abc_from_cell(cell)
   return [
-    f"ibrav = {signed_ibrav(ibrav_,alternative_axes_)}",
-    f"A = {A:12.6f}, B = {B:12.6f}, C = {C:12.6f}, COSAB = {COSAB:12.6}, COSBC = {COSBC:12.6}, COSAC = {COSAC:12.6}"
+    f" ibrav = {signed_ibrav(ibrav_,alternative_axes_)}",
+    f" A = {A:9.6f}, \n B = {B:9.6f}, \n C = {C:9.6f}, \n COSAB = {COSAB:8.6}, \n COSBC = {COSBC:8.6}, \n COSAC = {COSAC:8.6},"
   ]
 
 

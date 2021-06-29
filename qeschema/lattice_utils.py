@@ -21,8 +21,6 @@ def abc_from_cell(cell, dgts=5):
            lattice vectors
   """
   at = np.array((cell['a1'],cell['a2'], cell['a3']))
-  import pdb
-  pdb.set_trace()
   A = round(np.sqrt(at[0].dot(at[0])),dgts) 
   B = round(np.sqrt(at[1].dot(at[1])),dgts)
   C = round(np.sqrt(at[2].dot(at[2])),dgts) 
