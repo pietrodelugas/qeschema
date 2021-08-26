@@ -14,45 +14,30 @@ from math import isclose
 
 logger = logging.getLogger("qeschema")
 
-def abc_from_cell(cell, dgts=5):
+def abc_from_cell(cell, bravais_index, dgts=5):
   """
   cell: dictionary with 'a1','a2','a3' keys with values corresponding to the 3 lattice vectors
   returns: 6ple with values of A,B,C,cos(AB), cos(BC), cos(AC) lenghts in Angstrom and cosines of the 
            lattice vectors
   """
   at = np.array((cell['a1'],cell['a2'], cell['a3']))
-  A = round(np.sqrt(at[0].dot(at[0])),dgts) 
-  B = round(np.sqrt(at[1].dot(at[1])),dgts)
-  C = round(np.sqrt(at[2].dot(at[2])),dgts) 
-  COSAB = round(at[0].dot(at[1])/A/B, dgts) 
-  COSBC = round(at[1].dot(at[2])/B/C, dgts)
-  COSAC = round(at[2].dot(at[0])/C/A, dgts)  
-  bohr2ang = 0.529177 
-  return (round(A * bohr2ang,dgts), round(B * bohr2ang,dgts), round(C * bohr2ang,dgts), 
-  COSAB, COSBC, COSAC) 
-
-def signed_ibrav(ibrav, alternative_axes):
-  if alternative_axes is None:
-    return ibrav 
-  if ibrav == 3 and  alternative_axes == "b:a-b+c:-c":
-    return -3 
-  elif ibrav == 5 and  alternative_axes == "3fold-111":
-    return -5 
-  elif ibrav == 9:
-    if alternative_axes == "-b:a:c":
-      return -9 
-    elif alternative_axes == "bcoA-type":
-      return 91
-    else:
-      logger.error("%s is not a valid alternative-axes string for ibrav %i" % (alternative_axes, ibrav))  
-  elif ibrav == 91:
-    return 91 
-  elif (ibrav == 12 or ibrav == 13) and alternative_axes == "unique-axis-b":
-    return -ibrav 
+  celldm, ibrav = at2celldm(at,ibrav)
+  at2   = latgen(ibrav, celldm)
+  check = compare_at(at,at2,dgts=dgts) 
+  if check: 
+    a,b,c,cosab,cosbc,cosca = celldm2abc(celldm, ibrav,dgts=dgts) 
   else:
-    logger.error("%s is not a valid alternative-axes string for ibrav %i" % (alternative_axes,ibrav))
+    logger.error(f"Cell parameters in atomic_structure/cell are incompatible with bravais_index={bravais_index}")
+  return ibrav, (a, b, c, cosab, cosbc, cosca) 
 
-  
-
-
-
+def at2cell(a, ibrav):
+  """
+  a: numpy array with the cell parameters
+  ibrav: bravais index 
+  """ 
+  c1 = np.sqrt(a[0].dot(a[0]))
+  c2 = np.sqrt(a[1].dot(a[1]))/c1
+  c3 = np.sqrt(a[2].dot(a[2]))/c1
+  c4 = np.
+  if ibrav == 0:
+    
