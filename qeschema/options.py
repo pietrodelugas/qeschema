@@ -124,7 +124,14 @@ def get_system_nspin(name, **kwargs):
 def set_ibrav_to_zero(name, **_kwargs):
     assert isinstance(name, str)
     line = ' ibrav=0'
-    return [line]
+    alat_ = _kwargs['atomic_structure'].get('@alat', None)
+    if alat_:
+        line2 = f" celldm(1) = {alat_:f10.6}"
+        return [line,line2]
+    else:
+        return [line]
+
+
 
 def get_ibrav(name, **kwargs):
   assert isinstance((name), str)
@@ -134,9 +141,10 @@ def get_ibrav(name, **kwargs):
   except KeyError:
     logger.error("Missing required arguments when  computing ibrav value")
     return []
-  ibrav_ = atomic_structure.get('@bravais_index')
-  alternative_axes_=atomic_structure.get('@alternative_axes')
-  if ibrav_ is None:
+  bravais_index_ = atomic_structure.get('@bravais_index',None)
+  alternative_axes_=atomic_structure.get('@alternative_axes',None)
+  alat_ = atomic_structure.get('@alat',None)
+  if bravais_index_ is None:
     return set_ibrav_to_zero(name, **kwargs) 
   A,B,C,COSAB,COSAC,COSBC = abc_from_cell(cell)
   return [
