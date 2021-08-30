@@ -102,12 +102,19 @@ def at2celldm(at, ibrav_, alat_ = None):
     c6 = at[1].dot(at[0])/ c1 / c1 / c2 
   return (c1,c2,c3,c4,c5,c6)
 
+def qe_abc2at(abc, ibrav_, abc_is_primitive = False):
+  celldm_ =  abc2celldm(abc, ibrav_, abc_is_primitive)
+  at_ = latgen(celldm, ibrav_)
+
+
+
+
 
 class lattice:
   def __init__(self, vectors = None, abc = None, abc_is_primitive = False, 
                bravais_index = None, alt_axes = None, celldm = None, alat_ = None):
     self.bravais_index = bravais_index
-    self.alt_axes = alt_axes 
+    self.alt_axes =of alt_axes 
     self.cell  = self.__init_vectors(vectors, abc, abc_is_primitive, celldm)
     self.ibrav, self.celldm = self.get_ibrav_celldm() 
     abc_ = self.get_primitive_abc(vectors, abc, abc_is_primitive)
@@ -121,7 +128,7 @@ class lattice:
     if vectors:
       cellvec = np.asarray(vectors)
     elif abc:
-      cellvec = abc2at(abc, abc_is_primitive, ibrav_)
+      cellvec = qe_abc2at(abc, abc_is_primitive, ibrav_)
     elif celldm:
       cellvec = latgen(ibrav_, celldm)
     else:
@@ -135,7 +142,7 @@ class lattice:
   
   def get_primitive_abc(abc = None, abc_is_primitive = False):
     if abc:
-      if (np.round(self.cell - abc2at(abc, self.ibrav, abc_is_primitive), 5) != 0.0).any(): 
+      if (np.round(self.cell - qe_abc2at(abc, self.ibrav, abc_is_primitive), 5) != 0.0).any(): 
           logger.error("abc parameters in input do not match with expected cell vectors")  
     a = round(np.sqrt(self.cell[0].dot(self.cell[0])),5) 
     b = round(np.sqrt(self.cell[1].dot(self.cell[1])),5)
