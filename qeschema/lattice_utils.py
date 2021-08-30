@@ -11,11 +11,19 @@
 import logging 
 import numpy as np
 from math import isclose
+from numpy.lib.twodim_base import tri
 
 from xmlschema.validators.helpers import base64_binary_validator
 
 logger = logging.getLogger("qeschema")
 
+def bohr2angs(l):
+  la: float = l * 0.529177210903
+  return la 
+
+def angs2bohr(l):
+  lb: float = l / 0.529177210903
+  return lb 
 
 def qe_ibrav(bravais_index, alt_axes = None):
   if bravais_index < 0 or bravais_index > 14:
@@ -104,7 +112,131 @@ def at2celldm(at, ibrav_, alat_ = None):
 
 def qe_abc2at(abc, ibrav_, abc_is_primitive = False):
   celldm_ =  abc2celldm(abc, ibrav_, abc_is_primitive)
+  return latgen(celldm, ibrav_)
+
+
+def abc2celldm(abc, ibrav_, abc_is_primitive = False):
+  c1 = angs2bohr(abc[0])
+  c2 = abc[1]/abc[0]
+  c3 = abc[2]/abc[0]
+  triclic_lattices = [14, 0]
+  unique_axis_b    = [-12, -13]
+  unique_axis_c    = [-5, 5, 12, 13]
+  if ibrav_ in triclic_lattices:
+    c4 = abs[3]
+    c5 = abs[4]
+    c6 = abs[5]
+  elif ibrav_ in unique_axis_b:
+    c4 = 0.0
+    c5 = abc[4]
+    c6 = abc[5]
+  elif ibrav_ in unique_axis_c:
+    c4 = abc[3]
+    c5 = 0.0 
+    c6 = 0.0 
+  else:
+    c4 = 0.e0
+    c5 = 0.e0
+    c6 =0.e0 
+  return (c1,c2,c3,c4,c5,c6) 
+
+def celldm2abc(celldm, abc, ibrav_, abc_is_primitive=False):
   at_ = latgen(celldm, ibrav_)
+  orthorombic_lattices =[1, 2, 3, -3, 6, 7, 8, 9, -9, 91, 10] # all angles of conventional cell fixed to 90 degrees 
+  triclic_lattices = [14, 0] #3 angles 
+  unique_axis_b    = [-12, -13] # bc and ab == 90 degrees -- ca angle free 
+  unique_axis_c    = [-5, 5, 12, 13, 4] # ca and bv == 90 degrees -- ab angle free (PI/3 for hexagonal case)
+
+  if abc_is_primitive:
+    a = np.sqrt(at_[0].dot(at_[0])) 
+    b = np.sqrt(at_[1].dot(at_[1]))
+    c = np.sqrt(at_[2].dot(at_[2]))
+    cbc = at_[1].dot(at[2])/ b/ c 
+    cca = at_[2].dot(at[0])/ c/ a 
+    cab = at_[0].dot(at[1])/ a/ b 
+    a = bohr2angs(a)
+    b = bohr2angs(b)
+    c = bohr2angs(c)
+  else:
+    a = bohr2angs(celldm[0])
+    b = celldm[1] * a 
+    c = celldm[2] * a
+    #
+    if ibrav_ in triclic_lattices:
+      cbc = celldm[3]
+      cca = celldm[4]
+      cab = celldm[5]
+    elif ibrav_ in unique_axis_b:
+      cbc = 0.e0
+      cca = celldm[4]
+      cab = 0.e0 
+    elif ibrav_ in unique_axis_c:
+      if celldm[3] != 0.e0:
+        cab = celldm[3]
+      else:
+        cab = at[0].dot(at[1])/ (angs2bohr(a)**2) 
+      cca = 0.e0
+      cbc = 0.e0 
+    elif ibrav_ in orthorombic_lattices: 
+      cbc = 0.e0
+      cca = 0.e0 
+      cab = 0.e0
+    else:
+      logger.error("celldm2abc: unknown ibrav ")
+  return (a,b,c,cbc, cca, cab)   
+     
+
+  def latgen(celldm, ibrav_):
+    if ibrav_ == 1:
+      v1 = celldm[0]  * np.array([1.0, 0.0, 0.0]) 
+      v2 = celldm[0]  * np.array([0.0, 1.0, 0.0])
+      v3 = celldm[0]  * np.array([0.0, 0.0, 1.0])
+    elif ibrav_ == 2:
+      v1 = celldm[0] * 0.5e0 * np.array([-1.0, 0.0, 1.0])
+      v2 = celldm[0] * 0.5e0 * np.array([ 0.0, 1.0, 1.0])
+      v3 = celldm[0] * 0.5e0 * np.array([-1.0, 1.0, 0.0])
+    elif ibrav_ == -3:
+      v1 = celldm[0] * 0.5e0 * np.array([-1.0,  1.0,  1.0])
+      v2 = celldm[0] * 0.5e0 * np.array([ 1.0, -1.0,  1.0])
+      v3 = celldm[0] * 0.5e0 * np.array([ 1.0,  1.0, -1.0]) 
+    elif ibrav_ == 3:
+      v1 = celldm[0] * 0.5e0 * np.array([  1.0,  1.0, 1.0])
+      v2 = celldm[0] * 0.5e0 * np.array([ -1.0,  1.0, 1.0])
+      v3 = celldm[0] * 0.5e0 * np.array([ -1.0, -1.0, 0.0])
+    elif ibrav_ == 4:
+      sqrt3b4 = np.sqrt(3.e0/4.e0)
+      v1 = celldm[0] *             np.array([  1.0,   0.0,   0.0])
+      v2 = celldm[0] *             np.array([ -0.5, sqrt3b4, 0.0])
+      v3 = celldm[0] * celldm[2] * np.array([  0.0,   0.0,   1.0])
+    elif ibrav_ == -5 or ibrav_ == 5:
+      tx = np.sqrt((1 - celldm[3])/2.e0) 
+      ty = np.sqrt((1 - celldm[3])/6.e0)
+      tz = np.sqrt((1 + 2.e0 * celldm[3])/3.e0)
+      if ibrav_ == 5:
+        v1 = np.array([ tx,  -ty,    tz])
+        v2 = np.array([  0, 2.e0*ty, tz])
+        v3 = np.array([-tx,  -ty,    tz])
+      else:
+        u = tz - 2.e0 * np.sqrt(2.0) * ty 
+        v = tz + np.sqrt(2.0) * ty 
+        v1 = celldm[0] / np.sqrt(3.0) * np.array ([u, v, v])
+        v2 = celldm[0] / np.sqrt(3.0) * np.array ([v, u, v])
+        v3 = celldm[0] / np.sqrt(3.0) * np.array ([v, v, u]) 
+    elif ibrav_ ==6:
+      v1 = celldm[0] * np.array( [1.0, 0.0,     0.0  ])
+      v2 = celldm[0] * np.array( [0.0, 1.0,     0.0  ])
+      v3 = celldm[0] * np.array( [0.0, 0.0, celldm[2]])
+    elif ibrav_ == 7:
+      v1 = celldm[0] * 0.5 * np.array( [ 1.0, -1.0,   celldm[2] ])
+      v2 = celldm[0] * 0.5 * np.array( [ 1.0,  1.0,   celldm[2] ])
+      v3 = celldm[0] * 0.5 * np.array( [-1.0, -1.0,   celldm[2] ]) 
+    elif ibrav == 8:
+
+
+      v1 = celldm[0] * 0.5e0 * np.array([-1.0, 0.0, 1.0])
+      v2 = celldm[0] * 0.5e0 * np.array([ 0.0, 1.0, 1.0])
+      v3 = celldm[0] * 0.5e0 * np.array([-1.0, 1.0, 0.0])
+
 
 
 
@@ -114,7 +246,7 @@ class lattice:
   def __init__(self, vectors = None, abc = None, abc_is_primitive = False, 
                bravais_index = None, alt_axes = None, celldm = None, alat_ = None):
     self.bravais_index = bravais_index
-    self.alt_axes =of alt_axes 
+    self.alt_axes = alt_axes 
     self.cell  = self.__init_vectors(vectors, abc, abc_is_primitive, celldm)
     self.ibrav, self.celldm = self.get_ibrav_celldm() 
     abc_ = self.get_primitive_abc(vectors, abc, abc_is_primitive)
@@ -140,7 +272,7 @@ class lattice:
     celldm = at2celldm(self.cell, ibrav_) 
     return ibrav_, celldm 
   
-  def get_primitive_abc(abc = None, abc_is_primitive = False):
+  def get_primitive_abc(self, abc = None, abc_is_primitive = False):
     if abc:
       if (np.round(self.cell - qe_abc2at(abc, self.ibrav, abc_is_primitive), 5) != 0.0).any(): 
           logger.error("abc parameters in input do not match with expected cell vectors")  
