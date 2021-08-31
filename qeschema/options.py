@@ -14,7 +14,7 @@ import logging
 
 from .exceptions import XmlDocumentError
 from .utils import to_fortran
-from .lattice_utils import abc_from_cell, signed_ibrav
+from .lattice_utils import lattice
 
 logger = logging.getLogger('qeschema')
 
@@ -126,7 +126,7 @@ def set_ibrav_to_zero(name, **_kwargs):
     line = ' ibrav=0'
     alat_ = _kwargs['atomic_structure'].get('@alat', None)
     if alat_:
-        line2 = f" celldm(1) = {alat_:f10.6}"
+        line2 = f" celldm(1) = {alat_:10.6f}"
         return [line,line2]
     else:
         return [line]
@@ -146,10 +146,18 @@ def get_ibrav(name, **kwargs):
   alat_ = atomic_structure.get('@alat',None)
   if bravais_index_ is None:
     return set_ibrav_to_zero(name, **kwargs) 
-  A,B,C,COSAB,COSAC,COSBC = abc_from_cell(cell)
+  qe_lattice = lattice(vectors=[cell['a1'],cell['a2'],cell['a3']], bravais_index=bravais_index_,
+  alt_axes=alternative_axes_)
+  ibrav_ = qe_lattice.ibrav
+  abc = tuple((round(_,6) for _ in qe_lattice.conventional_abc.values())) 
   return [
-    f" ibrav = {signed_ibrav(ibrav_,alternative_axes_)}",
-    f" A = {A:9.6f}, \n B = {B:9.6f}, \n C = {C:9.6f}, \n COSAB = {COSAB:8.6}, \n COSBC = {COSBC:8.6}, \n COSAC = {COSAC:8.6},"
+    f" ibrav = {ibrav_}",
+    f" A = {abc[0]:9.6f}", 
+    f" B = {abc[1]:9.6f}", 
+    f" C = {abc[2]:9.6f}", 
+    f" COSAB = {abc[5]:9.6f}",
+    f"COSBC = {abc[3]:9.6f}",
+    f"COSAC = {abc[4]:9.6f}"
   ]
 
 
