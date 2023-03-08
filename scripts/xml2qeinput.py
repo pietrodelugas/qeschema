@@ -26,6 +26,7 @@ def parse_args():
     parser.add_argument("-v", "--verbosity", action="count", default=1,
                         help="Increase output verbosity.")
     parser.add_argument('-in', metavar='FILE', required=True, help="XML input filename.")
+    parser.add_argument('-schema', metavar='FILE', required=False, help="Local link for the schema file")
     return parser.parse_args()
 
 
@@ -49,11 +50,12 @@ if __name__ == '__main__':
     qeschema.set_logger(args.verbosity)
 
     input_fn = getattr(args, 'in')
+    input_schema = getattr(args, 'schema', None) 
     tree = Etree.parse(input_fn)
     root = tree.getroot()
     element_name = root.tag.split('}')[-1]
     if element_name == 'espresso':
-        xml_document = qeschema.PwDocument()
+        xml_document = qeschema.PwDocument(schema=input_schema)
     elif element_name == 'nebRun':
         xml_document = qeschema.NebDocument()
     elif element_name == 'espressoph':

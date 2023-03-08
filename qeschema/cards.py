@@ -129,10 +129,12 @@ def get_atomic_constraints_card(name, **kwargs):
     :param kwargs: Dictionary with converted data from XML file
     :return: List of strings
     """
+    #import pdb
+    #pdb.set_trace()
     try:
-        num_of_constraints = kwargs['num_of_constraints']
-        tolerance = kwargs['tolerance']
-        atomic_constraints = kwargs['atomic_constraints']
+        num_of_constraints = kwargs['atomic_constraints']['num_of_constraints']
+        tolerance = kwargs['atomic_constraints']['tolerance']
+        atomic_constraints = kwargs['atomic_constraints']['atomic_constraint']
     except KeyError:
         logger.error("Missing required arguments when building CONSTRAINTS card!")
         return []

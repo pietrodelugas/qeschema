@@ -547,7 +547,7 @@ class PwInputConverter(RawInputConverter):
             'nk_per_string': "CONTROL[nppstr]",
             'n_berry_cycles': "CONTROL[nberrycyc]",
         },
-        'atomic_constraints': ("CONSTRAINTS", cards.get_atomic_constraints_card),  # Card
+        'atomic_constraints': ("CONSTRAINTS", cards.get_atomic_constraints_card,None),  # Card
         'spin_constraints': {
             'spin_constraints': "SYSTEM[constrained_magnetization]",
             'lagrange_multiplier': "SYSTEM[lambda]",
@@ -561,7 +561,7 @@ class PwInputConverter(RawInputConverter):
             input_namelists=('CONTROL', 'SYSTEM', 'ELECTRONS', 'IONS', 'CELL',
                              FCP_NAMELIST),
             input_cards=('ATOMIC_SPECIES', 'ATOMIC_POSITIONS', 'K_POINTS',
-                         'CELL_PARAMETERS', 'ATOMIC_FORCES')
+                         'CELL_PARAMETERS', 'ATOMIC_FORCES', 'CONSTRAINTS')
         )
         if 'xml_file' in kwargs:
             self._input['CONTROL']['input_xml_schema_file'] = "{!r}".format(

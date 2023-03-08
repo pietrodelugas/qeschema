@@ -1,6 +1,6 @@
 <qes:espresso xmlns:qes="http://www.quantum-espresso.org/ns/qes/qes-1.0"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://www.quantum-espresso.org/ns/qes/qes-1.0 unknown/qes.xsd">
+              xsi:schemaLocation="http://www.quantum-espresso.org/ns/qes/qes-1.0 ./qes_current_develop.xsd">
   <input>
     <control_variables>
       <title> Al001 relaxation with damped dynamics </title>
@@ -35,6 +35,8 @@
       <print_every>
       100000
       </print_every>
+      <fcp>false</fcp>
+      <rism>false</rism>
     </control_variables>
     <atomic_species ntyp="1">
       <species name="Al">
@@ -205,5 +207,14 @@ false
         1 1 1
         1 1 1
     </free_positions>
+    <atomic_constraints>
+      <num_of_constraints>1</num_of_constraints>
+      <tolerance>1.e-3</tolerance>
+      <atomic_constraint>
+        <constr_parms>1.e2 1.e-1 1.e-3 0.0</constr_parms>
+        <constr_type>potential_wall</constr_type>
+        <constr_target>0.0</constr_target>
+      </atomic_constraint>
+    </atomic_constraints> 
   </input>
 </qes:espresso>
